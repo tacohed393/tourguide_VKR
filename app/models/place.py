@@ -1,4 +1,4 @@
-from sqlalchemy import String, Integer, Text
+from sqlalchemy import String, Integer, Text, Float
 from sqlalchemy.orm import Mapped, mapped_column
 from pgvector.sqlalchemy import Vector
 from app.core.database import Base
@@ -10,6 +10,11 @@ class Place(Base):
     name: Mapped[str] = mapped_column(String, index=True)
     city: Mapped[str] = mapped_column(String, index=True) 
     type: Mapped[str] = mapped_column(String)  
+
+    lat: Mapped[float] = mapped_column(Float, nullable=True)
+    lon: Mapped[float] = mapped_column(Float, nullable=True)
+
+    price: Mapped[str] = mapped_column(String, nullable=True) 
 
     
     description: Mapped[str] = mapped_column(Text) 

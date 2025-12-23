@@ -2,98 +2,186 @@
 import { ref } from 'vue'
 import axios from 'axios'
 
-// --- Данные (State) ---
-const query = ref('')           
-const city = ref('Moscow')        
-const places = ref([])          
-const loading = ref(false)      
+// --- СОСТОЯНИЕ ---
+const activeTab = ref('filters') 
+const loading = ref(false)       
+const places = ref([])           
 
-// --- Логика (Functions) ---
+// Поля ввода
+const city = ref('Moscow')       
+const category = ref('')
+const price = ref('')
+const aiQuery = ref('')
+
+const cities = [
+  { value: 'Moscow', label: 'Москва' },
+  { value: 'Saint Petersburg', label: 'Санкт-Петербург' },
+  { value: 'Omsk', label: 'Омск' }
+]
+
+const categories = [
+  { value: 'Кафе', label: 'Кафе' },
+  { value: 'Парк', label: 'Парк' },
+  { value: 'Музей', label: 'Музей' },
+  { value: 'Бар', label: 'Бар' }
+]
+
+const prices = [
+  { value: 'Бесплатно', label: 'Эконом' },
+  { value: 'Средний', label: 'Средний' },
+  { value: 'Премиум', label: 'Премиум' }
+]
+
+// --- ЛОГИКА ---
 const handleSearch = async () => {
-  if (!query.value) return 
-  
+  if (!city.value) {
+    alert("Пожалуйста, выберите город!")
+    return
+  }
+
   loading.value = true
   places.value = [] 
 
   try {
-    const response = await axios.post('http://localhost:8000/places/search', {
-      query: query.value,
-      city: city.value,
-      limit: 5
-    })
-    
+    let url = ''
+    let payload = {}
+
+    if (activeTab.value === 'filters') {
+      url = 'http://localhost:8000/places/search/filters'
+      payload = {
+        city: city.value,
+        type: category.value || null, 
+        price: price.value || null,
+        limit: 10
+      }
+    } else {
+      url = 'http://localhost:8000/places/search/ai' 
+      payload = {
+        city: city.value,
+        query: aiQuery.value,
+        limit: 5
+      }
+    }
+
+    const response = await axios.post(url, payload)
     places.value = response.data
-    
+
   } catch (error) {
     console.error(error)
-    alert('Сервер не отвечает.')
+    alert("Ошибка связи с сервером")
   } finally {
-    loading.value = false 
+    loading.value = false
+  }
+}
+
+// Обработчик Enter в текстовом поле
+const handleEnter = (e) => {
+  if (!e.shiftKey) { // Если нажат просто Enter (без Shift)
+    e.preventDefault() // Не переносим строку
+    handleSearch()     // Ищем
   }
 }
 </script>
 
 <template>
-  <div class="app-container">
+  <div class="app-layout">
     
-    <!-- Шапка -->
+    <!-- ЗАГОЛОВОК -->
     <div class="header">
-      <h1>TourGuide AI</h1>
-      <p>Гибридный поиск туристических мест (SQL + Vector)</p>
+      <h1>🌍 TourGuide AI</h1>
+      <p>Найди идеальное место за секунду</p>
     </div>
 
-    <!-- Блок поиска -->
+    <!-- КАРТОЧКА ПОИСКА -->
     <el-card class="search-card">
-      <div class="search-row">
+      
+      <!-- Вкладки (Tabs) растянуты -->
+      <el-tabs v-model="activeTab" class="custom-tabs" stretch>
         
-        <!-- Выпадающий список городов -->
-        <el-select v-model="city" placeholder="Выберите город" size="large" style="width: 160px;">
-          <el-option label="Москва" value="Moscow" />
-          <el-option label="Питер" value="Saint Petersburg" />
-          <el-option label="Омск" value="Omsk" />
-        </el-select>
+        <!-- Вкладка 1 -->
+        <el-tab-pane label="ПОИСК ПО ПАРАМЕТРАМ" name="filters">
+          <div class="filters-container">
+            <div class="filter-item">
+              <span class="label">Город</span>
+              <el-select v-model="city" placeholder="Выберите город" size="large" style="width: 100%">
+                <el-option v-for="c in cities" :key="c.value" :label="c.label" :value="c.value" />
+              </el-select>
+            </div>
 
-        <!-- Поле ввода текста -->
-        <el-input
-          v-model="query"
-          placeholder="Например: хочу посидеть за ноутбуком и отдохнуть в тихой обстановке"
-          size="large"
-          @keyup.enter="handleSearch"
-          class="search-input"
-        />
+            <div class="filter-item">
+              <span class="label">Категория</span>
+              <el-select v-model="category" placeholder="Любая" clearable size="large" style="width: 100%">
+                <el-option v-for="c in categories" :key="c.value" :label="c.label" :value="c.value" />
+              </el-select>
+            </div>
 
-        <!-- Кнопка поиска -->
-        <el-button type="primary" size="large" :loading="loading" @click="handleSearch">
-          Найти
+            <div class="filter-item">
+              <span class="label">Бюджет</span>
+              <el-select v-model="price" placeholder="Любой" clearable size="large" style="width: 100%">
+                <el-option v-for="p in prices" :key="p.value" :label="p.label" :value="p.value" />
+              </el-select>
+            </div>
+          </div>
+        </el-tab-pane>
+
+        <!-- Вкладка 2 -->
+        <el-tab-pane label="УМНЫЙ ПОИСК (ИИ)" name="ai">
+          <div class="ai-container">
+            <div class="filter-item" style="margin-bottom: 20px;">
+              <span class="label">Где искать?</span>
+              <el-select v-model="city" placeholder="Выберите город" size="large" style="width: 100%">
+                <el-option v-for="c in cities" :key="c.value" :label="c.label" :value="c.value" />
+              </el-select>
+            </div>
+            
+            <div class="filter-item">
+              <span class="label">Ваши пожелания</span>
+              <!-- Поле ввода стало компактнее (:rows="2") и работает по Enter -->
+              <el-input
+                v-model="aiQuery"
+                :rows="2"
+                type="textarea"
+                placeholder="Например: хочу погулять в тишине у воды"
+                resize="none"
+                size="large"
+                @keydown.enter="handleEnter"
+              />
+              <div class="hint">Нажмите Enter для поиска, Shift+Enter для переноса</div>
+            </div>
+          </div>
+        </el-tab-pane>
+
+      </el-tabs>
+
+      <!-- БОЛЬШАЯ КНОПКА -->
+      <div class="search-actions">
+        <el-button type="primary" size="large" @click="handleSearch" :loading="loading" class="search-btn">
+          НАЙТИ МЕСТА
         </el-button>
       </div>
+
     </el-card>
 
-    <!-- Список результатов -->
-    <div class="results-area">
-      
-      <!-- Если ничего не найдено или еще не искали -->
-      <el-empty v-if="places.length === 0 && !loading" description="Введите запрос, чтобы найти интересные места" />
+    <!-- РЕЗУЛЬТАТЫ -->
+    <div class="results-container">
+      <el-divider content-position="left">Результаты поиска</el-divider>
 
-      <!-- Сетка карточек -->
-      <div v-else class="places-grid">
-        <el-card 
-          v-for="place in places" 
-          :key="place.id" 
-          class="place-card" 
-          shadow="hover"
-        >
+      <el-empty v-if="!loading && places.length === 0" description="Здесь появятся лучшие места..." />
+
+      <div class="cards-grid">
+        <el-card v-for="place in places" :key="place.id" class="place-card" shadow="hover">
           <template #header>
             <div class="card-header">
-              <span class="place-name">{{ place.name }}</span>
-              <el-tag type="success">{{ place.type }}</el-tag>
+              <span class="place-title">{{ place.name }}</span>
+              <el-tag type="success" effect="dark">{{ place.type }}</el-tag>
             </div>
           </template>
           
           <div class="card-body">
-            <p class="desc">{{ place.description }}</p>
-            <div class="meta">
-              <el-tag type="info" size="small" effect="plain"> {{ place.city }}</el-tag>
+            <p class="place-desc">{{ place.description }}</p>
+            <div class="place-footer">
+              <el-tag type="info" effect="plain" size="small">📍 {{ place.city }}</el-tag>
+              <el-tag type="warning" effect="plain" size="small">💰 {{ place.price || 'Не указано' }}</el-tag>
             </div>
           </div>
         </el-card>
@@ -103,77 +191,128 @@ const handleSearch = async () => {
   </div>
 </template>
 
-<style>
-
-/* Простые стили для красоты */
-body {
-  margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f0f2f5;
-  color: #333;
-}
-
-.app-container {
+<style scoped>
+/* СТИЛИ */
+.app-layout {
   max-width: 900px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 60px 20px;
+  font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background-color: #f5f7fa;
+  min-height: 100vh;
 }
 
 .header {
   text-align: center;
   margin-bottom: 40px;
 }
-
 .header h1 {
-  color: #409EFF; 
-  margin: 0;
-  font-size: 2.5rem;
+  color: #2c3e50;
+  font-size: 3rem;
+  margin-bottom: 10px;
+  font-weight: 800;
+  letter-spacing: -1px;
 }
+.header p { color: #7f8c8d; font-size: 1.1rem; }
 
-.header p {
-  color: #666;
-  margin-top: 10px;
-}
-
+/* Карточка поиска */
 .search-card {
-  margin-bottom: 30px;
-  border-radius: 12px;
+  border-radius: 16px;
+  margin-bottom: 50px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important;
+  border: none;
+  overflow: hidden;
 }
 
-.search-row {
-  display: flex;
-  gap: 15px;
+/* Вкладки (Tabs) */
+.custom-tabs :deep(.el-tabs__item) {
+  font-size: 16px;
+  font-weight: 600;
+  height: 50px;
+  color: #909399;
+}
+.custom-tabs :deep(.el-tabs__item.is-active) {
+  color: #409EFF;
 }
 
-.search-input {
-  flex: 1; 
-}
-
-.places-grid {
+/* Контейнеры внутри вкладок */
+.filters-container {
   display: grid;
-  grid-template-columns: 1fr; 
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+  padding: 20px 10px;
+}
+
+.ai-container {
+  padding: 20px 10px;
+  max-width: 600px; /* Ограничил ширину, чтобы не было слишком широко */
+  margin: 0 auto;
+}
+
+.label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #34495e;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hint {
+  margin-top: 5px;
+  font-size: 12px;
+  color: #999;
+  text-align: right;
+}
+
+/* Кнопка */
+.search-actions {
+  margin-top: 10px;
+  padding: 20px 10px 10px;
+  text-align: center;
+  border-top: 1px solid #f0f0f0;
+}
+
+.search-btn {
+  width: 100%;
+  max-width: 300px;
+  height: 50px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border-radius: 25px;
+  box-shadow: 0 4px 15px rgba(64, 158, 255, 0.3);
+  transition: all 0.3s;
+}
+.search-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(64, 158, 255, 0.4);
+}
+
+/* Результаты */
+.cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 20px;
 }
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.place-card {
+  border-radius: 12px;
+  border: 1px solid #eee;
+  transition: transform 0.2s;
 }
-
-.place-name {
-  font-weight: bold;
-  font-size: 1.2rem;
+.place-card:hover {
+  transform: translateY(-3px);
 }
+.place-title { font-weight: 700; font-size: 1.2rem; color: #2c3e50; }
+.place-desc { color: #555; line-height: 1.6; margin-bottom: 20px; font-size: 1rem; }
+.place-footer { display: flex; gap: 10px; }
 
-.desc {
-  line-height: 1.6;
-  color: #555;
-}
-
-.meta {
-  margin-top: 15px;
-  display: flex;
-  gap: 10px;
+/* Адаптив */
+@media (max-width: 768px) {
+  .filters-container {
+    grid-template-columns: 1fr;
+  }
+  .header h1 { font-size: 2rem; }
 }
 </style>
