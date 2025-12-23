@@ -76,9 +76,9 @@ const handleSearch = async () => {
 
 // Обработчик Enter в текстовом поле
 const handleEnter = (e) => {
-  if (!e.shiftKey) { // Если нажат просто Enter (без Shift)
-    e.preventDefault() // Не переносим строку
-    handleSearch()     // Ищем
+  if (!e.shiftKey) { 
+    e.preventDefault() 
+    handleSearch()     
   }
 }
 </script>
@@ -95,7 +95,7 @@ const handleEnter = (e) => {
     <!-- КАРТОЧКА ПОИСКА -->
     <el-card class="search-card">
       
-      <!-- Вкладки (Tabs) растянуты -->
+      <!-- Вкладки -->
       <el-tabs v-model="activeTab" class="custom-tabs" stretch>
         
         <!-- Вкладка 1 -->
@@ -136,7 +136,6 @@ const handleEnter = (e) => {
             
             <div class="filter-item">
               <span class="label">Ваши пожелания</span>
-              <!-- Поле ввода стало компактнее (:rows="2") и работает по Enter -->
               <el-input
                 v-model="aiQuery"
                 :rows="2"
