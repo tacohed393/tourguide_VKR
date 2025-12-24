@@ -243,7 +243,7 @@ const handleAIEnter = (e) => {
     <!-- HEADER -->
     <header class="main-header-row">
       <div class="logo-area">
-        <h1>🇷🇺 TourGuide AI</h1>
+        <h1>TourGuide</h1>
       </div>
       
       <div class="user-menu">
@@ -392,10 +392,11 @@ const handleAIEnter = (e) => {
       </el-form>
       <template #footer>
         <div class="auth-footer">
-          <el-button type="primary" @click="handleAuth" style="width: 100%">
+          <el-button type="primary" @click="handleAuth" class="auth-submit-btn">
             {{ authMode === 'login' ? 'Войти' : 'Создать аккаунт' }}
           </el-button>
-          <el-button @click="authMode = authMode === 'login' ? 'register' : 'login'" link style="margin-top: 10px;">
+          
+          <el-button @click="authMode = authMode === 'login' ? 'register' : 'login'" link>
             {{ authMode === 'login' ? 'Нет аккаунта? Регистрация' : 'Есть аккаунт? Вход' }}
           </el-button>
         </div>
@@ -423,16 +424,7 @@ const handleAIEnter = (e) => {
     <!-- 4. ДЕТАЛИ МЕСТА -->
     <el-dialog v-model="showDetails" width="600px" align-center destroy-on-close class="rounded-dialog">
       <div v-if="selectedPlace" class="details-body">
-        <div class="map-embed">
-             <iframe 
-               width="100%" 
-               height="250" 
-               frameborder="0" 
-               style="border:0"
-               :src="`https://yandex.ru/map-widget/v1/?ll=${selectedPlace.lon}%2C${selectedPlace.lat}&z=16&pt=${selectedPlace.lon}%2C${selectedPlace.lat},pm2rdl`"
-               allowfullscreen
-             ></iframe>
-        </div>
+        <img :src="selectedPlace.image_url" class="details-big-img" />
         
         <div class="details-content">
           <div class="details-meta">
@@ -449,6 +441,17 @@ const handleAIEnter = (e) => {
             <p>{{ selectedPlace.search_context }}</p>
           </div> 
           -->
+          <el-divider content-position="left">Расположение на карте</el-divider>
+          <div class="map-embed">
+             <iframe 
+               width="100%" 
+               height="250" 
+               frameborder="0" 
+               style="border:0"
+               :src="`https://yandex.ru/map-widget/v1/?ll=${selectedPlace.lon}%2C${selectedPlace.lat}&z=16&pt=${selectedPlace.lon}%2C${selectedPlace.lat},pm2rdl`"
+               allowfullscreen
+             ></iframe>
+          </div>
 
           <div class="actions">
             <el-button type="primary" :icon="MapLocation" @click="openMap" size="large">В 2ГИС</el-button>
@@ -534,8 +537,21 @@ const handleAIEnter = (e) => {
 .welcome-header { font-size: 1.5rem; font-weight: bold; text-align: center; }
 .welcome-content { text-align: center; font-size: 1.1rem; line-height: 1.6; }
 .welcome-content .subtext { font-size: 0.9rem; color: #999; margin-top: 20px; }
-.welcome-actions { display: flex; flex-direction: column; gap: 10px; padding: 0 20px; }
-.auth-footer { text-align: center; }
+.welcome-actions {
+  display: flex;
+  flex-direction: column; 
+  gap: 15px;              
+  padding: 0 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* кнопки растягиваться и убираем дурацкий отступ слева */
+.welcome-actions .el-button {
+  width: 100%;
+  margin-left: 0 !important; 
+  margin-right: 0 !important;
+}
 
 /* FAV LIST */
 .fav-list { display: flex; flex-direction: column; gap: 10px; }
@@ -556,6 +572,31 @@ const handleAIEnter = (e) => {
 .details-title { font-size: 2rem; color: #1e293b; margin-bottom: 15px; }
 .details-text { line-height: 1.7; color: #334155; font-size: 1.1rem; margin-bottom: 25px; }
 .actions { display: flex; gap: 15px; justify-content: center; }
+
+/* Футер модалки входа */
+.auth-footer {
+  display: flex;
+  flex-direction: column; /* Кнопки друг под другом */
+  align-items: center;    /* Выравнивание по центру */
+  gap: 10px;              /* Отступ между кнопками */
+  width: 100%;
+}
+/* Стили модалки */
+.details-big-img { 
+    width: 100%; 
+    height: 250px; /* Фиксированная высота */
+    object-fit: cover; 
+    border-radius: 8px; 
+    margin-bottom: 20px; /* Отступ от текста */
+}
+.auth-submit-btn {
+  width: 100%;            /* Синяя кнопка на всю ширину */
+}
+
+/* САМОЕ ВАЖНОЕ: Убираем кривой отступ Element Plus */
+.auth-footer .el-button + .el-button {
+  margin-left: 0 !important;
+}
 
 @media (max-width: 768px) {
   .filters-grid { grid-template-columns: 1fr; }

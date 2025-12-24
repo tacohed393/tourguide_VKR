@@ -9,17 +9,17 @@ ENV UV_LINK_MODE=copy \
 
 WORKDIR /app
 
-# Копируем конфиги
+
 COPY pyproject.toml uv.lock ./
 
-# Устанавливаем (uv сам скачает легкий torch для 3.12)
+
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project
 
-# Копируем код
+
 COPY . .
 
-# Финализируем
+
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen
 
