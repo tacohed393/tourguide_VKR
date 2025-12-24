@@ -26,10 +26,10 @@ const cities = [
 ]
 
 const categories = [
-  { value: 'Кафе', label: '☕ Кафе' }, 
-  { value: 'Парк', label: '🌳 Парк' },
-  { value: 'Музей', label: '🏛️ Музей' },
-  { value: 'Бар', label: '🍸 Бар' }
+  { value: 'Кафе', label: 'Кафе' }, 
+  { value: 'Парк', label: 'Парк' },
+  { value: 'Музей', label: 'Музей' },
+  { value: 'Бар', label: 'Бар' }
 ]
 
 const prices = [
@@ -171,7 +171,7 @@ const handleAIEnter = (e) => {
               v-model="aiQuery"
               type="textarea"
               :rows="2"
-              placeholder="Опишите, чего вам хочется... (например: тихое историческое место для прогулки вечером)"
+              placeholder="Опишите, чего вам хочется"
               @keydown.enter="handleAIEnter"
               resize="none"
             />
@@ -208,7 +208,7 @@ const handleAIEnter = (e) => {
             </div>
             <p class="card-desc">{{ place.description.substring(0, 80) }}...</p>
             <div class="card-footer">
-              <span>📍 {{ place.city }}</span>
+              <span>{{ place.city }}</span>
               <span class="price-tag">{{ place.price }}</span>
             </div>
           </div>
@@ -231,7 +231,7 @@ const handleAIEnter = (e) => {
           <p class="details-text">{{ selectedPlace.description }}</p>
           <!-- пока не надо 
           <div class="ai-insight" v-if="selectedPlace.search_context"> 
-            <strong>🤖 AI-анализ атмосферы:</strong>
+            <strong>AI-анализ атмосферы:</strong>
             <p>{{ selectedPlace.search_context }}</p>
           </div>
           -->
