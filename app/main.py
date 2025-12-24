@@ -13,7 +13,7 @@ from app.models.place import Place
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
-        # ВОТ ЭТА СТРОКА ДОЛЖНА БЫТЬ АКТИВНА:
+        # ВОТ ЭТА СТРОКА ДОЛЖНА БЫТЬ:
         await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         
         # эта не нужна с миграцией

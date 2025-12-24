@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { MapLocation, Star, Search, User, Lock, Right } from '@element-plus/icons-vue'
 
+
 // --- СОСТОЯНИЕ (Data) ---
 const activeTab = ref('filters') 
 const loading = ref(false)       
@@ -20,6 +21,7 @@ const selectedPlace = ref(null)
 const showWelcomeModal = ref(false) // Приветственное окно
 const showAuthModal = ref(false)    // Окно логина/регистрации
 const showProfile = ref(false)      // Окно профиля
+const activeProfileTab = ref('favorites')
 
 // Авторизация
 const token = ref(localStorage.getItem('token') || '')
@@ -40,10 +42,10 @@ const cities = [
 ]
 
 const categories = [
-  { value: 'Кафе', label: '☕ Кафе' },
-  { value: 'Парк', label: '🌳 Парк' },
-  { value: 'Музей', label: '🏛️ Музей' },
-  { value: 'Бар', label: '🍸 Бар' }
+  { value: 'Кафе', label: 'Кафе' },
+  { value: 'Парк', label: 'Парк' },
+  { value: 'Музей', label: 'Музей' },
+  { value: 'Бар', label: 'Бар' }
 ]
 
 const prices = [
@@ -51,16 +53,24 @@ const prices = [
   { value: 'Средний', label: 'Средний чек' },
   { value: 'Премиум', label: 'Премиум' }
 ]
+const updateForm = ref({
+  username: '',
+  old_password: '',
+  new_password: ''
+})
 
+const currentUsername = computed(() => {
+    return favoritesList.value.username || userEmail.value
+})
 // --- ИНИЦИАЛИЗАЦИЯ ---
-onMounted(() => {
+onMounted(async() => {
   // Если токена нет, показываем приветственное окно
   if (!token.value) {
     showWelcomeModal.value = true
   } else {
     // Если токен есть, настраиваем axios и грузим избранное
     axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
-    loadFavorites()
+    await loadFavorites() 
   }
 })
 
@@ -106,7 +116,7 @@ const handleAuth = async () => {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
     
     showAuthModal.value = false
-    loadFavorites()
+    await loadFavorites()
     
     // Если мы пришли из приветствия и успешно вошли, больше ничего не показываем
     
@@ -137,6 +147,7 @@ const loadFavorites = async () => {
     const res = await axios.get('http://localhost:8000/api/users/me')
     favoritesList.value = res.data.favorites
     favorites.value = res.data.favorites.map(p => p.id)
+    updateForm.value.username = res.data.username || res.data.email.split('@')[0]
   } catch (e) {
     console.error("Ошибка загрузки профиля", e)
     if (e.response && e.response.status === 401) logout() // Токен протух
@@ -228,6 +239,24 @@ const openMap = () => {
     }
   }
 }
+const handleUpdateProfile = async () => {
+    try {
+        const payload = {
+            username: updateForm.value.username,
+            old_password: updateForm.value.old_password || null,
+            new_password: updateForm.value.new_password || null,
+        };
+
+        await axios.put('http://localhost:8000/api/users/me/update', payload);
+        alert("Профиль успешно обновлен!");
+        showProfile.value = false;
+        // Перезагрузка данных
+        loadFavorites();
+
+    } catch (e) {
+        alert("Ошибка обновления: " + (e.response?.data?.detail || e.message));
+    }
+}
 
 const handleAIEnter = (e) => {
   if (!e.shiftKey) {
@@ -306,7 +335,7 @@ const handleAIEnter = (e) => {
               v-model="aiQuery"
               type="textarea"
               :rows="2"
-              placeholder="Опишите, чего вам хочется... (например: тихое историческое место для прогулки вечером)"
+              placeholder="Опишите, чего вам хочется"
               @keydown.enter="handleAIEnter"
               resize="none"
             />
@@ -403,24 +432,53 @@ const handleAIEnter = (e) => {
       </template>
     </el-dialog>
 
-    <!-- 3. ЛИЧНЫЙ КАБИНЕТ -->
-    <el-dialog v-model="showProfile" title="Личный кабинет" width="600px">
-      <h3>⭐ Ваши избранные места:</h3>
-      <div v-if="favoritesList.length > 0" class="fav-list">
-        <div v-for="place in favoritesList" :key="place.id" class="fav-item" @click="openPlaceDetails(place)">
-          <div class="fav-img-box">
-             <img :src="place.image_url" class="fav-img"/>
+    <!-- PROFILE MODAL (С вкладками) -->
+  <el-dialog v-model="showProfile" title="Личный кабинет" width="600px">
+       <el-tabs type="border-card" v-model="activeProfileTab">
+        
+        <!-- Вкладка 1: ИЗБРАННОЕ -->
+        <el-tab-pane label="Избранное" name="favorites">
+          <div v-if="favoritesList.length > 0" class="fav-list" style="max-height: 400px; overflow-y: auto;">
+            <!-- ... (твой код избранного) ... -->
+            <div v-for="place in favoritesList" :key="place.id" class="fav-item" @click="openPlaceDetails(place)">
+              <div class="fav-img-box"><img :src="place.image_url" class="fav-img"/></div>
+              <div class="fav-info">
+                <b>{{ place.name }}</b>
+                <div class="fav-meta"><small>{{ place.city }} • {{ place.type }}</small></div>
+              </div>
+               <el-button type="danger" :icon="Star" circle size="small" @click.stop="toggleFavorite(place)"></el-button>
+            </div>
           </div>
-          <div class="fav-info">
-            <b>{{ place.name }}</b>
-            <div class="fav-meta"><small>{{ place.city }} • {{ place.type }}</small></div>
-          </div>
-          <el-button type="danger" :icon="Star" circle size="small" @click.stop="toggleFavorite(place)"></el-button>
-        </div>
-      </div>
-      <el-empty v-else description="Вы еще ничего не добавили" />
-    </el-dialog>
+          <el-empty v-else description="Вы еще ничего не добавили" />
+        </el-tab-pane>
 
+        <!-- Вкладка 2: НАСТРОЙКИ/СМЕНА ПАРОЛЯ -->
+      <el-tab-pane label="Настройки" name="settings">
+        <el-form label-position="top" :model="updateForm" style="max-width: 400px; margin: 0 auto;">
+          <el-form-item label="Ваш Email">
+             <el-input :model-value="userEmail" disabled />
+          </el-form-item>
+          <el-form-item label="Имя пользователя">
+             <el-input v-model="updateForm.username" />
+          </el-form-item>
+          <el-divider>Смена пароля</el-divider>
+          <el-form-item label="Старый пароль">
+             <el-input v-model="updateForm.old_password" type="password" />
+          </el-form-item>
+          <el-form-item label="Новый пароль">
+             <el-input v-model="updateForm.new_password" type="password" />
+          </el-form-item>
+          
+          <el-form-item>
+             <el-button type="success" @click="handleUpdateProfile" :disabled="!updateForm.username" style="width: 100%;">
+                Сохранить изменения
+             </el-button>
+          </el-form-item>
+        </el-form>
+      </el-tab-pane>
+    </el-tabs>
+  </el-dialog>
+  
     <!-- 4. ДЕТАЛИ МЕСТА -->
     <el-dialog v-model="showDetails" width="600px" align-center destroy-on-close class="rounded-dialog">
       <div v-if="selectedPlace" class="details-body">

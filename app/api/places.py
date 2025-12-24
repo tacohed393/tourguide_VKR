@@ -35,7 +35,7 @@ async def create_place(place_in: PlaceCreate, db: AsyncSession = Depends(get_db)
     await db.refresh(new_place)
     return new_place
 
-SEARCH_THRESHOLD = 1.115   
+SEARCH_THRESHOLD = 1.112
 
 @router.post("/search/ai", response_model=list[PlaceResponse])
 async def search_places(search_in: SearchRequest, db: AsyncSession = Depends(get_db)):

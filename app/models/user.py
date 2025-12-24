@@ -16,7 +16,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(String, unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String)
-    
+    username: Mapped[str] = mapped_column(String, default="username", nullable=False)
     favorites = relationship("Place", secondary=favorites_table, back_populates="favorited_by")
 
     def __repr__(self):
