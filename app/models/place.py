@@ -2,6 +2,8 @@ from sqlalchemy import String, Integer, Text, Float
 from sqlalchemy.orm import Mapped, mapped_column
 from pgvector.sqlalchemy import Vector
 from app.core.database import Base
+from sqlalchemy.orm import relationship
+
 
 class Place(Base):
     __tablename__ = "places"
@@ -11,8 +13,8 @@ class Place(Base):
     city: Mapped[str] = mapped_column(String, index=True) 
     type: Mapped[str] = mapped_column(String)  
 
-    #lat: Mapped[float] = mapped_column(Float, nullable=True)
-    #lon: Mapped[float] = mapped_column(Float, nullable=True)
+    lat: Mapped[float] = mapped_column(Float, nullable=True)
+    lon: Mapped[float] = mapped_column(Float, nullable=True)
 
     image_url: Mapped[str] = mapped_column(String, nullable=True)
 
@@ -23,6 +25,8 @@ class Place(Base):
     search_context: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     embedding: Mapped[list[float]] = mapped_column(Vector(768))
+
+    favorited_by = relationship("User", secondary="favorites", back_populates="favorites")
 
     def __repr__(self):
         return f"<Place {self.name} ({self.city})>"
