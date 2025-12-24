@@ -89,12 +89,22 @@ const openPlaceDetails = (place) => {
 
 // Открыть Яндекс.Карты
 const openMap = () => {
+  // Проверяем, выбрано ли место и есть ли у него координаты
   if (selectedPlace.value && selectedPlace.value.lat && selectedPlace.value.lon) {
-    const { lat, lon } = selectedPlace.value
-    const url = `https://yandex.ru/maps/?pt=${lon},${lat}&z=16&l=map`
+    
+    const { lat, lon, name, city } = selectedPlace.value
+    
+    // Формируем "умную" ссылку для 2ГИС. 
+    // Она сразу откроет поиск по названию в конкретном городе и сфокусирует карту по координатам.
+    const searchQuery = encodeURIComponent(`${city} ${name}`)
+    const url = `https://2gis.ru/search/${searchQuery}/geo/${lon},${lat}?m=${lon}%2C${lat}%2F16`
+    
     window.open(url, '_blank')
+    
   } else {
-    const url = `https://yandex.ru/maps/?text=${selectedPlace.value.city}, ${selectedPlace.value.name}`
+    // План Б: если вдруг координат в базе нет, просто ищем по названию
+    const searchQuery = encodeURIComponent(`${selectedPlace.value.city} ${selectedPlace.value.name}`)
+    const url = `https://2gis.ru/search/${searchQuery}`
     window.open(url, '_blank')
   }
 }
@@ -113,7 +123,7 @@ const handleAIEnter = (e) => {
     
     <!-- HEADER -->
     <header class="main-header">
-      <h1>🇷🇺 TourGuide AI</h1>
+      <h1>TourGuide</h1>
       <p>Твой персональный гид по культурным и интересным местам России</p>
     </header>
 
@@ -124,7 +134,7 @@ const handleAIEnter = (e) => {
         <!-- РЕЖИМ 1: ФИЛЬТРЫ -->
         <el-tab-pane name="filters">
           <template #label>
-            <el-icon><Search /></el-icon> Поиск по параметрам
+            Поиск по фильтрам
           </template>
           <div class="filters-grid">
             <div class="input-group">
@@ -151,7 +161,7 @@ const handleAIEnter = (e) => {
         <!-- РЕЖИМ 2: ИИ ПОИСК -->
         <el-tab-pane name="ai">
           <template #label>
-            <el-icon><Star /></el-icon> Умный поиск (AI)
+             Умный поиск
           </template>
           <div class="ai-box">
             <el-select v-model="city" placeholder="Город" size="large" style="margin-bottom: 15px; width: 200px;">
