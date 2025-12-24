@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
+from fastapi.staticfiles import StaticFiles 
 
 from app.core.database import engine, Base
 from app.api.places import router as places_router
@@ -16,7 +17,7 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(title="VKR TourGuide API", lifespan=lifespan)
-
+app.mount("/static", StaticFiles(directory="static"), name="static")
 #все разрешено, ничего не запрещено
 app.add_middleware(
     CORSMiddleware,

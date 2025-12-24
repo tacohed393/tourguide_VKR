@@ -35,7 +35,8 @@ services:
     volumes:
       - ./:/app  
       - hf_cache:/app/hf_cache #а на самом деле в докере
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload 
+      - venv_data:/app/.venv
+    command: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload 
 
   #Фронт
   frontend:
@@ -71,3 +72,4 @@ services:
 volumes:
   postgres_data:
   hf_cache: #сохранение модели в докере(-v не юзать)
+  venv_data:

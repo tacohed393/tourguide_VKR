@@ -14,6 +14,8 @@ class Place(Base):
     #lat: Mapped[float] = mapped_column(Float, nullable=True)
     #lon: Mapped[float] = mapped_column(Float, nullable=True)
 
+    image_url: Mapped[str] = mapped_column(String, nullable=True)
+
     price: Mapped[str] = mapped_column(String, nullable=True) 
 
     
