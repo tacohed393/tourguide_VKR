@@ -7,11 +7,8 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 # --- МОИ ИМПОРТЫ ---
-# 1. Импортируем настройки (чтобы взять URL базы)
 from app.core.config import settings
-# 2. Импортируем Базу (чтобы взять метаданные таблиц)
 from app.core.database import Base
-# 3. Импортируем ВСЕ модели (иначе Alembic их не увидит!)
 from app.models.place import Place
 # -------------------
 
@@ -20,7 +17,7 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Указываем метаданные твоих моделей
+
 target_metadata = Base.metadata
 
 def run_migrations_offline() -> None:
@@ -44,7 +41,6 @@ def do_run_migrations(connection):
 
 async def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-    # Подменяем URL из конфига на наш из .env
     configuration = config.get_section(config.config_ini_section)
     configuration["sqlalchemy.url"] = settings.DATABASE_URL
 
