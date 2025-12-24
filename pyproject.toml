@@ -3,7 +3,7 @@ name = "tourguide"
 version = "0.1.0"
 description = ""
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "fastapi",
     "uvicorn[standard]",
@@ -12,6 +12,20 @@ dependencies = [
     "pgvector",
     "pydantic-settings",
     "python-dotenv",
+    "passlib[bcrypt]",
+    "pyjwt",
+    "python-multipart",
     "sentence-transformers",
+    "torch",
     "alembic",
+    "bcrypt==4.0.1",
+    "argon2-cffi>=25.1.0",
 ]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }

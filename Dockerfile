@@ -1,4 +1,4 @@
-FROM python:3.13-slim
+FROM python:3.12-slim
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
@@ -9,15 +9,18 @@ ENV UV_LINK_MODE=copy \
 
 WORKDIR /app
 
-# Torch через pip
-RUN pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu --no-cache-dir
-
+# Копируем конфиги
 COPY pyproject.toml uv.lock ./
 
-RUN uv sync --frozen --no-install-project
+# Устанавливаем (uv сам скачает легкий torch для 3.12)
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-install-project
 
+# Копируем код
 COPY . .
 
-RUN uv sync --frozen
+# Финализируем
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen
 
 CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

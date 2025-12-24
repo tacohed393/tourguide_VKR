@@ -5,6 +5,7 @@ from sqlalchemy import text
 # Импорты
 from app.core.config import settings
 from app.models.place import Place
+from app.models.user import User
 # Импортируем твою асинхронную функцию
 from app.services.ml_service import get_embedding
 
@@ -102,7 +103,7 @@ async def seed_data():
     SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
     async with SessionLocal() as db:
-        await db.execute(text("TRUNCATE TABLE places RESTART IDENTITY"))
+        await db.execute(text("TRUNCATE TABLE places RESTART IDENTITY CASCADE"))
         
         for data in TEST_PLACES:
             print(f"Adding: {data['name']}...")
