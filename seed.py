@@ -8,6 +8,7 @@ from app.models.place import Place
 # Импортируем твою асинхронную функцию
 from app.services.ml_service import get_embedding
 
+PLACE_IMAGES ={}
 TEST_PLACES = [
     # --- МОСКВА ---
     {
@@ -15,6 +16,8 @@ TEST_PLACES = [
         "city": "Moscow",
         "type": "Музей",
         "price": "Бесплатно",
+        "lat": 55.753930, "lon": 37.620795,
+        "image_url": "http://localhost:8000/static/images/defautl_img_1.jpg",
         "description": "Сердце России, исторический центр Москвы с видом на Кремль и Собор Василия Блаженного.",
         "context": "Красная Площадь. Главная достопримечательность, история, прогулки, брусчатка, мавзолей Ленина, ГУМ, мороженое, сувениры, зима, каток, ярмарка, центр города."
     },
@@ -23,6 +26,8 @@ TEST_PLACES = [
         "city": "Moscow",
         "type": "Парк",
         "price": "Бесплатно",
+        "lat": 55.729462, "lon": 37.601323,
+        "image_url": "http://localhost:8000/static/images/defautl_img_1.jpg",
         "description": "Главный парк столицы. Идеальное место для отдыха, спорта и пикников на набережной.",
         "context": "Парк Горького. Природа, деревья, набережная Москвы-реки, велосипеды, самокаты, прогулка с детьми, свидание, лето, отдых, пикник, катамараны. Есть еда, бургеры, кофе."
     },
@@ -31,6 +36,8 @@ TEST_PLACES = [
         "city": "Moscow",
         "type": "Кафе",
         "price": "Средний",
+        "lat": 55.729462, "lon": 37.601323,
+        "image_url": "http://localhost:8000/static/images/defautl_img_1.jpg",
         "description": "Крупнейший фудмолл в Европе. Гастрономический квартал в здании бывшего трамвайного депо.",
         "context": "Депо.Москва. Еда, рестораны, гастромаркет, фастфуд, высокая кухня, бар, коктейли, тусовка, завтрак, обед, ужин, встречи с друзьями, шумное место, много людей, вкусно поесть."
     },
@@ -112,6 +119,9 @@ async def seed_data():
                 type=data["type"],
                 price=data["price"],
                 description=data["description"],
+                lat=data.get("lat"), 
+                lon=data.get("lon"), 
+                image_url=data.get("image_url"), 
                 search_context=text_for_vector,
                 embedding=vector
             )

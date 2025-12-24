@@ -11,8 +11,10 @@ class Place(Base):
     city: Mapped[str] = mapped_column(String, index=True) 
     type: Mapped[str] = mapped_column(String)  
 
-    #lat: Mapped[float] = mapped_column(Float, nullable=True)
-    #lon: Mapped[float] = mapped_column(Float, nullable=True)
+    lat: Mapped[float] = mapped_column(Float, nullable=True)
+    lon: Mapped[float] = mapped_column(Float, nullable=True)
+
+    image_url: Mapped[str] = mapped_column(String, nullable=True)
 
     price: Mapped[str] = mapped_column(String, nullable=True) 
 
